@@ -1,0 +1,18 @@
+# Environnement pixi
+.pixi/
+
+# Artefacts de build
+build/
+build_pixi/
+*.o
+*.so
+
+# Sorties de simulation
+*.h5
+*.gsd
+pics/
+*.png
+*.gif
+
+# Divers
+.vscode/
