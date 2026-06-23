@@ -1,6 +1,6 @@
 # Jour 2 — Optimisation d'un stencil (Gray-Scott)
 
-*[Accueil](../README.md) · ← [Jour 1](day1.md)*
+*[Accueil](../README.md) · ← [Jour 1](day1.md) · détail → [Référence des modules](day2-reference.md)*
 
 Le second jour applique les principes du Jour 1 à un cas concret : l'accélération
 d'une simulation Gray-Scott à résultat constant.

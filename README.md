@@ -19,6 +19,7 @@ procédure de reproduction de l'environnement de développement.
 |---|---|
 | **[Jour 1 — Fondations](docs/day1.md)** | CPU, vectorisation, parallélisme, memory/compute-bound, concurrence, pureté, compilation, tests |
 | **[Jour 2 — Optimisation d'un stencil](docs/day2.md)** | Gray-Scott, data layout, vectorisation, blocking, TBB, E/S HDF5, visualisation, MAQAO |
+| ↳ **[Jour 2 — Référence détaillée](docs/day2-reference.md)** | Analyse module par module du matériel du cours (data layout, vectorisation, blocking/pyramides, TBB, GPU CUDA/nvc++/Thrust, HDF5, distribué) |
 | **[Installation](INSTALL.md)** ([EN](INSTALL.en.md)) | Reproduction de l'environnement en local (Linux et Windows/WSL2), sans conteneur |
 
 ## Objet
