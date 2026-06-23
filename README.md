@@ -1,5 +1,7 @@
 # Gray Scott School 2026 — Environnement local
 
+*🇬🇧 English version: [README.en.md](README.en.md)*
+
 Guide pour reproduire **sur ta machine** l'environnement du cours HPC
 *« Performance With Stencil »* (Gray Scott School 2026), **sans conteneur**.
 
