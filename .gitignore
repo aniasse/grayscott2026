@@ -11,8 +11,13 @@ build_pixi/
 *.h5
 *.gsd
 pics/
-*.png
 *.gif
+
+# Images : on ignore les PNG par défaut...
+*.png
+# ...sauf les illustrations versionnées de la doc
+!docs/img/
+!docs/img/*.png
 
 # Divers
 .vscode/
