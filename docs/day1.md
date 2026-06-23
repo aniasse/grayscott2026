@@ -1,17 +1,18 @@
-# Jour 1 — Les fondations de la performance
+# Jour 1 — Fondations de la performance
 
-*🏠 [Accueil](../README.md) · suite → [Jour 2](day2.md)*
+*[Accueil](../README.md) · suite → [Jour 2](day2.md)*
 
-Le premier jour pose le vocabulaire. Rien de magique : pour aller vite, il faut
-d'abord comprendre **comment une machine calcule** et **où le temps se perd**.
+Le premier jour établit le vocabulaire et les principes. L'optimisation suppose de
+comprendre le fonctionnement du matériel et la localisation des pertes de temps.
 
 ---
 
 ## 1. Le CPU
 
-Un processeur, ce n'est pas « un » cerveau, mais **plusieurs cœurs** indépendants.
-On a arrêté d'augmenter la fréquence vers 2005 (trop de chaleur), alors on a mis
-**plus de cœurs**. C'est toute la raison d'être du parallélisme.
+Un processeur est composé de **plusieurs cœurs** indépendants. La fréquence
+d'horloge stagne depuis ~2005 (limite thermique) ; la montée en performance passe
+désormais par l'**augmentation du nombre de cœurs**, ce qui rend le parallélisme
+incontournable.
 
 ```
 CPU
@@ -20,111 +21,114 @@ CPU
  └─ … (ex. 20 cœurs par socket sur TAOUEY)
 ```
 
-**À retenir :** la puissance vient du **nombre de cœurs**, pas de la vitesse brute.
+**Principe :** la performance provient du nombre de cœurs, non de la fréquence brute.
 
 ---
 
 ## 2. La compilation
 
-**Compiler = traduire ton C++ en code machine, une fois, avant l'exécution** — et
-l'optimiser au passage. Quatre étapes :
+La compilation traduit le code source C++ en code machine **avant l'exécution**, avec
+optimisation. Elle comprend quatre étapes :
 
 ```
-ton .cpp ─① préproc ─② compilation ─③ assemblage ─④ liens ─→ exécutable
-            (#include)   (→ assembleur,    (→ code      (+ bibliothèques)
-                          OPTIMISATION ici)  machine .o)
+source .cpp ─① préproc. ─② compilation ─③ assemblage ─④ édition de liens ─→ exécutable
+              (#include)   (→ assembleur,   (→ code        (+ bibliothèques)
+                            OPTIMISATION)    machine .o)
 ```
 
-C'est à l'étape ② que naît la vectorisation. Le bon réflexe : **`-O3 -march=native`**
-(optimiser pour *ce* processeur). Compilé (C++) = rapide ; interprété (Python) = souple
-mais lent.
+L'optimisation et la vectorisation sont produites à l'étape ②. Options recommandées :
+**`-O3 -march=native`** (optimisation pour le processeur cible). Les langages compilés
+(C++) sont rapides ; les langages interprétés (Python) privilégient la flexibilité.
 
-**À retenir :** sans optimisation (`-O0`), ton code peut être **10× plus lent**.
+**Principe :** sans optimisation (`-O0`), le code peut être un ordre de grandeur plus lent.
 
 ---
 
 ## 3. La vectorisation (SIMD)
 
-*Une instruction qui traite plusieurs nombres d'un coup.* Au lieu d'additionner 1
-valeur, le cœur en additionne 8 (ou 16) à la fois.
+*Single Instruction, Multiple Data* : une instruction traite plusieurs valeurs
+simultanément.
 
 ```
-Sans SIMD :  a0=b0+c0 ; a1=b1+c1 ; … (8 instructions)
-Avec SIMD :  [a0..a7] = [b0..b7] + [c0..c7]   (1 instruction)
+Scalaire :  a0=b0+c0 ; a1=b1+c1 ; … (8 instructions)
+Vectorisé : [a0..a7] = [b0..b7] + [c0..c7]   (1 instruction)
 ```
 
-C'est **gratuit** : le compilateur le fait si la boucle est « propre ». Gain : ×4 à ×16.
+La vectorisation est générée automatiquement par le compilateur lorsque la boucle est
+régulière (accès contigus, absence de dépendances). Gain typique : ×4 à ×16 selon la
+largeur des registres (SSE 128 bits, AVX2 256 bits, AVX-512 512 bits).
 
 ---
 
-## 4. Concurrence vs Parallélisme
+## 4. Concurrence et parallélisme
 
-La confusion classique. La formule à retenir :
+Deux notions distinctes :
 
-> **Concurrence = *gérer* plusieurs tâches à la fois. Parallélisme = les *faire* en même temps.**
+> **Concurrence** : structurer un programme pour *gérer* plusieurs tâches simultanées.
+> **Parallélisme** : *exécuter* plusieurs calculs en même temps.
 
 | | Concurrence | Parallélisme |
 |---|---|---|
-| But | gérer l'**attente** (I/O, réseau) | aller plus vite en **calcul** |
-| Matériel | marche sur **1 cœur** | exige **plusieurs cœurs** |
-| Exemple | 1 serveur web | un gros calcul découpé |
+| Objectif | masquer l'**attente** (E/S, réseau) | accélérer le **calcul** |
+| Matériel | possible sur **un seul cœur** | exige **plusieurs cœurs** |
+| Domaine | serveurs, E/S asynchrones | calcul intensif |
 
-> Image : la concurrence, c'est un barista qui jongle entre 3 commandes ;
-> le parallélisme, c'est 3 baristas qui bossent en même temps.
+La concurrence est un outil de structuration ; le parallélisme en est le résultat
+lorsque le matériel le permet.
 
 ---
 
-## 5. Memory-bound vs Compute-bound
+## 5. Memory-bound et compute-bound
 
-**La** question de perf : ton code attend-il **le calcul** ou **la mémoire** ?
+Caractérisation du facteur limitant d'un calcul :
 
-- **Compute-bound** : limité par la vitesse de calcul → ajouter des cœurs aide.
-- **Memory-bound** : les cœurs **attendent les données** → ajouter des cœurs n'aide
-  presque plus (ils se battent pour la bande passante).
+- **Compute-bound** : limité par la vitesse des unités de calcul → l'ajout de cœurs
+  améliore la performance.
+- **Memory-bound** : limité par la bande passante mémoire ; les cœurs attendent les
+  données → l'ajout de cœurs n'apporte qu'un gain marginal.
 
-Beaucoup de codes scientifiques (dont les **stencils**) sont **memory-bound**.
-C'est pour ça qu'on ne gagne pas toujours ×N en mettant N cœurs.
-
-**Outil de référence :** le *roofline model*.
+L'**intensité arithmétique** (opérations par octet chargé) détermine le régime. Les
+**stencils** présentent une faible intensité arithmétique et sont généralement
+memory-bound. Outil d'analyse de référence : le *roofline model*.
 
 ---
 
 ## 6. La pureté (purity)
 
-Une fonction est **pure** si sa sortie ne dépend **que de ses entrées**, sans effet
-de bord (pas d'état partagé modifié). Pourquoi c'est crucial en HPC ?
+Une fonction est **pure** lorsque sa sortie dépend uniquement de ses entrées, sans
+effet de bord (aucune modification d'état partagé).
 
-> Un calcul **pur n'a pas de dépendances cachées** → il est **parallélisable sans
-> risque** (pas de *data race*).
+> Un calcul pur ne comporte pas de dépendance cachée : il est **parallélisable sans
+> risque de** ***data race***.
 
-Exemple concret : un calcul qui **lit un tableau et en écrit un autre** (double
-tampon) est pur → parallèle facilement. Le même calcul **en place** (lire/écrire le
-même tableau) crée des dépendances → dangereux en parallèle.
-
----
-
-## 7. Les tests unitaires (version HPC)
-
-En calcul scientifique, on ne teste pas une égalité exacte — les **arrondis
-flottants** l'interdisent. Trois réflexes :
-
-1. **Jamais `==` sur des flottants** → comparer avec une **tolérance** (`|a-b| < ε`).
-2. **Tester des invariants** quand on ne connaît pas le résultat exact :
-   conservation d'énergie, symétrie, pas de `NaN`, solution analytique d'un cas simple.
-3. **Séquentiel == parallèle** → si ça diffère, tu as une **data race**.
+Application : un schéma à **double tampon** (lecture d'un tableau, écriture d'un autre)
+est pur et trivialement parallélisable. Un schéma **en place** (lecture et écriture du
+même tableau) introduit des dépendances et n'est pas parallélisable sans précaution.
 
 ---
 
-## 🧩 Comment tout s'emboîte
+## 7. Tests unitaires en calcul scientifique
+
+Les arrondis flottants interdisent la comparaison exacte. Trois règles :
+
+1. **Comparaison avec tolérance** (`|a − b| < ε`), jamais d'égalité stricte sur des
+   flottants.
+2. **Vérification d'invariants** lorsque le résultat exact est inconnu : conservation
+   d'énergie, symétrie, absence de `NaN`, solution analytique d'un cas simple.
+3. **Équivalence séquentiel / parallèle** : une divergence révèle une *data race*.
+
+---
+
+## Synthèse
 
 ```
-CPU (des cœurs, chacun avec du SIMD)
-  │  la PURETÉ rend le calcul parallélisable sans bug
-  ├─ VECTORISATION : à l'intérieur d'un cœur          (×8-16)
-  ├─ PARALLÉLISME  : entre les cœurs                   (×N cœurs)
-  └─ mais si MEMORY-BOUND → le gain plafonne (bande passante)
+CPU (cœurs multiples, unités SIMD)
+  │  la PURETÉ autorise la parallélisation sans bug
+  ├─ VECTORISATION : au sein d'un cœur              (×8–16)
+  ├─ PARALLÉLISME  : entre les cœurs                (×N cœurs)
+  └─ régime MEMORY-BOUND → gain plafonné par la bande passante
 
-La COMPILATION fabrique tout ça ; les TESTS garantissent que ça reste juste.
+La COMPILATION produit l'optimisation ; les TESTS en garantissent la justesse.
 ```
 
-➡️ Suite : [Jour 2 — optimiser un vrai stencil](day2.md).
+Suite : [Jour 2 — optimisation d'un stencil](day2.md).

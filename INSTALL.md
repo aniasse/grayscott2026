@@ -2,7 +2,7 @@
 
 *🏠 [Accueil](README.md) · 🇬🇧 English: [INSTALL.en.md](INSTALL.en.md)*
 
-Guide pour reproduire **sur ta machine** l'environnement du cours HPC
+Procédure de reproduction **en local** de l'environnement du cours HPC
 *« Performance With Stencil »* (Gray Scott School 2026), **sans conteneur**.
 
 Le cours s'appuie sur des bibliothèques **PHOENIX** (LAPP), **HDF5** et **TBB**.
@@ -39,7 +39,7 @@ mkdir -p pics && ./8-ImagePlotting/gray_scott_image -i output.h5 -o pics/
 ```
 
 > 📌 Le dossier de travail est **celui qui contient `pixi.toml`** (selon la version
-> du dépôt : racine, `Examples/`, ou `day-2/`). Adapte le `cd` en conséquence.
+> du dépôt : racine, `Examples/`, ou `day-2/`). Adapter le `cd` en conséquence.
 
 ---
 
@@ -65,7 +65,7 @@ pixi --version            # vérifie (>= 0.70)
 ```bash
 git clone https://gitlab.in2p3.fr/CTA-LAPP/COURS/PerformanceWithStencil.git
 cd PerformanceWithStencil
-ls pixi.toml              # tu dois être dans le dossier qui contient ce fichier
+ls pixi.toml              # se placer dans le dossier contenant ce fichier
 ```
 
 ### 3. Installer l'environnement
@@ -105,7 +105,7 @@ ctest -R TestGrayScottDataFormat --output-on-failure
 # Ex 8 — HDF5 -> images PNG
 mkdir -p pics
 ./8-ImagePlotting/gray_scott_image -i output.h5 -o pics/
-ls pics/                  # tu obtiens une série de .png (motifs de Turing)
+ls pics/                  # série de .png produite (motifs de Turing)
 ```
 
 Pour recompiler après une modification :
@@ -125,7 +125,7 @@ Dans **PowerShell en administrateur** :
 ```powershell
 wsl --install -d Ubuntu
 ```
-Redémarre si demandé, puis ouvre **Ubuntu** depuis le menu Démarrer et crée ton
+Redémarrer si demandé, puis ouvrir **Ubuntu** depuis le menu Démarrer et créer un
 utilisateur Linux.
 
 > Si `wsl` existe déjà : `wsl --update` puis `wsl --install -d Ubuntu`.
@@ -141,12 +141,12 @@ pixi run bash -c 'mkdir -p build && cd build && cmake .. $(phoenixcmake-config -
 ```
 Puis lancer les exemples comme en **Linux** (section ci-dessus).
 
-### Conseils WSL
-- Travaille dans le **système de fichiers Linux** (`~/` dans WSL), **pas** dans
-  `/mnt/c/...` → beaucoup plus rapide pour la compilation.
-- Pour voir les images PNG : depuis WSL, `explorer.exe .` ouvre le dossier courant
+### Recommandations WSL
+- Travailler dans le **système de fichiers Linux** (`~/` dans WSL), **pas** dans
+  `/mnt/c/...` : la compilation y est nettement plus rapide.
+- Visualisation des images PNG : depuis WSL, `explorer.exe .` ouvre le dossier courant
   dans l'explorateur Windows.
-- VS Code : installe l'extension **WSL** et ouvre le dossier avec `code .`.
+- VS Code : installer l'extension **WSL**, puis ouvrir le dossier avec `code .`.
 
 ---
 

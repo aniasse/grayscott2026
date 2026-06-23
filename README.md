@@ -1,38 +1,38 @@
-# Gray Scott School 2026 — Notes & Synthèses
+# Gray Scott School 2026 — Notes et synthèses
 
-Mes notes de la **Gray Scott School 2026** (CINERI / LAPP) : une école d'été sur
-le **calcul haute performance (HPC)** en C++, construite autour d'un fil rouge —
-optimiser une simulation du modèle de **Gray-Scott** (réaction-diffusion).
+Synthèses du cours de **calcul haute performance (HPC)** de la Gray Scott School 2026
+(CINERI / LAPP). Le cours porte sur l'**optimisation de performance en C++**, illustrée
+par la simulation du modèle de **Gray-Scott** (réaction-diffusion).
 
-L'idée de ce dépôt : **partager**, en clair et en court, ce qu'on y apprend — les
-concepts, le code, et comment refaire tourner l'environnement chez soi.
+Ce dépôt rassemble les concepts fondamentaux, les méthodes d'optimisation, et la
+procédure de reproduction de l'environnement de développement.
 
 <p align="center">
   <img src="docs/img/gs_evolution_3.png" width="280" alt="Motif de Turing généré par Gray-Scott"/>
   <br/>
-  <em>Un motif de Turing produit par la simulation Gray-Scott.</em>
+  <em>Figure — Motif de Turing produit par la simulation Gray-Scott.</em>
 </p>
 
-## 📚 Sommaire
+## Sommaire
 
-| | Contenu |
+| Document | Contenu |
 |---|---|
-| 🧠 **[Jour 1 — Les fondations](docs/day1.md)** | CPU, vectorisation, parallélisme, memory/compute-bound, concurrence, pureté, compilation, tests |
-| ⚡ **[Jour 2 — Optimiser un stencil](docs/day2.md)** | Gray-Scott, data layout, vectorisation, blocking, TBB, I/O HDF5, images, MAQAO |
-| 🛠️ **[Installation](INSTALL.md)** ([🇬🇧 EN](INSTALL.en.md)) | Reproduire l'environnement en local (Linux & Windows/WSL2), sans conteneur |
+| **[Jour 1 — Fondations](docs/day1.md)** | CPU, vectorisation, parallélisme, memory/compute-bound, concurrence, pureté, compilation, tests |
+| **[Jour 2 — Optimisation d'un stencil](docs/day2.md)** | Gray-Scott, data layout, vectorisation, blocking, TBB, E/S HDF5, visualisation, MAQAO |
+| **[Installation](INSTALL.md)** ([EN](INSTALL.en.md)) | Reproduction de l'environnement en local (Linux et Windows/WSL2), sans conteneur |
 
-## 🎯 En une phrase
+## Objet
 
-> Le HPC, ce n'est pas « écrire du code rapide » par magie : c'est **mesurer**,
-> comprendre **où** ça coince (le calcul ? la mémoire ?), et exploiter le matériel
-> à fond — **vectorisation** dans chaque cœur, **parallélisme** entre les cœurs,
-> et **GPU/multi-nœuds** au-delà.
+L'optimisation HPC repose sur trois principes : **mesurer** la performance,
+**identifier** le facteur limitant (calcul ou mémoire), puis **exploiter** le matériel —
+vectorisation au sein d'un cœur, parallélisme entre cœurs, accélération GPU et
+multi-nœuds au-delà d'une machine.
 
-## 🔗 Liens
+## Références
 
 - Cours officiel : <https://cta-lapp.pages.in2p3.fr/COURS/PerformanceWithStencil/>
-- Modèle de Gray-Scott : réaction-diffusion produisant des « motifs de Turing »
+- Modèle de Gray-Scott : système de réaction-diffusion produisant des motifs de Turing.
 
 ---
 
-*Notes prises pendant l'école — corrections et contributions bienvenues.*
+*Document de synthèse. Contributions et corrections bienvenues.*

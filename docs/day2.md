@@ -1,128 +1,126 @@
-# Jour 2 — Optimiser un stencil (Gray-Scott)
+# Jour 2 — Optimisation d'un stencil (Gray-Scott)
 
-*🏠 [Accueil](../README.md) · ← [Jour 1](day1.md)*
+*[Accueil](../README.md) · ← [Jour 1](day1.md)*
 
-Le jour 2 applique les concepts du jour 1 à un vrai cas : rendre une simulation
-**Gray-Scott** de plus en plus rapide, sans changer son résultat.
+Le second jour applique les principes du Jour 1 à un cas concret : l'accélération
+d'une simulation Gray-Scott à résultat constant.
 
 ---
 
 ## 1. Le modèle de Gray-Scott
 
-Deux substances chimiques **U** et **V** qui **diffusent** dans l'espace et
-**réagissent** ensemble. De ce duo simple émergent des **motifs de Turing** :
-taches, labyrinthes, coraux… Les équations :
+Deux substances **U** et **V** diffusent dans l'espace et réagissent chimiquement. De
+ce système émergent des **motifs de Turing**. Les équations gouvernantes :
 
 ```
 ∂u/∂t = Du·∇²u − u·v² + F·(1−u)
 ∂v/∂t = Dv·∇²v + u·v² − (F+k)·v
 ```
 
-Le motif se construit au fil du temps :
+Le motif se développe au cours du temps :
 
 <p align="center">
-  <img src="img/gs_evolution_1.png" width="200" alt="début"/>
-  <img src="img/gs_evolution_2.png" width="200" alt="milieu"/>
-  <img src="img/gs_evolution_3.png" width="200" alt="fin"/>
-  <br/><em>Évolution de la concentration de V (début → fin de simulation).</em>
+  <img src="img/gs_evolution_1.png" width="200" alt="initial"/>
+  <img src="img/gs_evolution_2.png" width="200" alt="intermédiaire"/>
+  <img src="img/gs_evolution_3.png" width="200" alt="final"/>
+  <br/><em>Figure — Concentration de V aux stades initial, intermédiaire et final.</em>
 </p>
 
 ---
 
-## 2. Le stencil et le Laplacien
+## 2. Stencil et Laplacien
 
-Le terme `∇²` (Laplacien) se calcule par un **stencil** : chaque point se met à jour
-en fonction de ses **voisins**.
+Le terme `∇²` (Laplacien) est évalué par un **stencil** : chaque point est mis à jour
+en fonction de ses voisins.
 
 ```
         u[i-1,j]
-u[i,j-1]  u[i,j]  u[i,j+1]      ∇²u ≈ (voisins) − 4·u[i,j]
+u[i,j-1]  u[i,j]  u[i,j+1]      ∇²u ≈ (somme des voisins) − 4·u[i,j]
         u[i+1,j]
 ```
 
-C'est l'opération centrale — et, on l'a vu, typiquement **memory-bound**.
+Cette opération constitue le noyau de calcul ; elle est typiquement memory-bound.
 
 ---
 
-## 3. Mesurer AVANT d'optimiser
+## 3. Mesure préalable
 
-Règle d'or : **on n'optimise pas à l'aveugle**. On commence par **chronométrer**
-et trouver le point chaud (la boucle qui mange le temps). Optimiser le reste = perte
-de temps (loi d'Amdahl).
+L'optimisation s'appuie sur la **mesure**, non sur l'intuition. La démarche consiste à
+chronométrer l'exécution, identifier le point chaud (boucle dominant le temps de
+calcul), puis n'optimiser que celui-ci (loi d'Amdahl).
 
 ```
-écrire → MESURER → optimiser le point chaud → re-mesurer → …
+écriture → MESURE → optimisation du point chaud → nouvelle mesure → …
 ```
 
 ---
 
-## 4. Le data layout (disposition mémoire)
+## 4. Disposition mémoire (data layout)
 
-Comme le stencil est memory-bound, **la façon de ranger les données en mémoire**
-compte énormément. On stocke la grille 2D dans **un tableau plat contigu** (et non
-un tableau de structures) : les accès deviennent réguliers → le cache et le SIMD
-sont efficaces.
+Le noyau étant memory-bound, l'organisation des données en mémoire est déterminante.
+La grille 2D est stockée dans **un tableau contigu** (et non un tableau de structures),
+ce qui rend les accès réguliers et permet l'exploitation du cache et du SIMD.
 
-**À retenir :** bon layout = données contiguës = mémoire heureuse.
-
----
-
-## 5. La vectorisation automatique
-
-Avec un layout propre et `-O3 -march=native`, le compilateur **vectorise** la boucle
-de stencil tout seul (plusieurs points calculés par instruction). Gros gain, zéro
-ligne de code en plus.
+**Principe :** des données contiguës maximisent l'efficacité mémoire.
 
 ---
 
-## 6. Le voyage d'optimisation (Ex 9 : `91 → 95`)
+## 5. Vectorisation automatique
 
-Le même Gray-Scott, réécrit étape par étape — c'est le cœur du jour 2 :
+Avec une disposition régulière et les options `-O3 -march=native`, le compilateur
+vectorise le noyau de stencil. Le gain est significatif sans modification du code.
 
-| Version | Idée | Concept |
+---
+
+## 6. Progression d'optimisation (Ex 9 : `91 → 95`)
+
+La même simulation est réécrite par étapes successives — cœur du Jour 2 :
+
+| Version | Approche | Concept |
 |---|---|---|
-| `91` très naïf | baseline lente | — |
-| `92` naïf | un peu mieux | — |
-| `93` layout efficace | données contiguës | **memory-bound** |
-| `94` auto-vectorisé | le compilo vectorise | **SIMD** |
-| `95` Laplacien optimisé | stencil affiné | |
+| `91` | très naïve (référence) | — |
+| `92` | naïve | — |
+| `93` | disposition efficace | memory-bound |
+| `94` | auto-vectorisée | SIMD |
+| `95` | Laplacien optimisé | — |
 
-➡️ On **mesure** le gain à chaque marche : c'est la démonstration vivante du jour 1.
+Le gain est mesuré à chaque étape, illustrant les principes du Jour 1.
 
 ---
 
-## 7. Le blocking (cache tiling)
+## 7. Blocking (cache tiling)
 
-Sur une grande grille, on parcourt trop de mémoire pour le cache. Le **blocking**
-découpe le travail en **petits blocs** qui tiennent dans le cache → on réutilise les
-données tant qu'elles sont « chaudes ».
+Sur une grande grille, le volume de données parcouru dépasse la capacité du cache. Le
+**blocking** découpe le calcul en **blocs** dimensionnés pour le cache, ce qui maximise
+la réutilisation des données chargées.
 
 ```
-Grille entière           Découpée en blocs
+Grille entière           Découpage en blocs
 ┌───────────────┐        ┌────┬────┬────┐
 │               │   →    │ B1 │ B2 │ B3 │   chaque bloc tient
 │               │        ├────┼────┼────┤   dans le cache
 └───────────────┘        │ B4 │ B5 │ …  │
 ```
 
-**À retenir :** une optim **mémoire** (pas calcul) — précieuse quand on est memory-bound.
+**Principe :** optimisation mémoire (et non calcul), pertinente en régime memory-bound.
 
 ---
 
-## 8. Le parallélisme avec TBB
+## 8. Parallélisme avec TBB
 
-**TBB** (Intel Threading Building Blocks) = paralléliser sur tous les cœurs, façon
-C++ moderne (≈ OpenMP, autre style). On distribue les lignes/blocs de la grille sur
-les cœurs. Combiné à la vectorisation : **SIMD dans chaque cœur × N cœurs**.
+**TBB** (Intel Threading Building Blocks) répartit le calcul sur l'ensemble des cœurs
+(approche C++, comparable à OpenMP). Les lignes ou blocs de la grille sont distribués
+entre les cœurs. Combinée à la vectorisation, la performance s'écrit : SIMD par cœur
+× nombre de cœurs.
 
 ---
 
-## 9. Sortie des données & images (Ex 7-8)
+## 9. Sortie des données et visualisation (Ex 7-8)
 
-- **Ex 7 — DataOutput** : sauvegarder les résultats au format **HDF5** (le standard
-  I/O en HPC), avec un test qui valide l'écriture/lecture.
-- **Ex 8 — ImagePlotting** : relire le HDF5 et produire des **images PNG** (les
-  motifs ci-dessus). C'est le **post-traitement / la visualisation**.
+- **Ex 7 — DataOutput** : enregistrement des résultats au format **HDF5** (standard
+  d'E/S en HPC), accompagné d'un test de validation lecture/écriture.
+- **Ex 8 — ImagePlotting** : conversion du fichier HDF5 en **images PNG**
+  (post-traitement et visualisation).
 
 ```
 simulation → output.h5 (HDF5) → gray_scott_image → pics/*.png
@@ -130,26 +128,23 @@ simulation → output.h5 (HDF5) → gray_scott_image → pics/*.png
 
 ---
 
-## 10. MAQAO — analyser la performance
+## 10. Analyse de performance (MAQAO)
 
-**MAQAO** (outil UVSQ) regarde le **binaire au niveau assembleur** et te dit :
-où passe le temps (hotspots), si la boucle est **vectorisée**, si tu es **memory-
-ou compute-bound**, et **quoi corriger**. C'est le pont entre « ça compile » et
-« ça va vite ».
-
-> Comme un banc de diagnostic de garagiste : il ouvre le capot et pointe le goulot.
+**MAQAO** (UVSQ) analyse le **binaire au niveau assembleur** : identification des points
+chauds, taux de vectorisation, régime (memory-bound / compute-bound) et recommandations
+d'optimisation. Il établit le lien entre la correction fonctionnelle et la performance.
 
 ---
 
-## 🧩 La pyramide d'optimisation (le résumé du jour 2)
+## Synthèse — hiérarchie d'optimisation
 
 ```
-1. bon DATA LAYOUT      → la mémoire suit
-2. VECTORISATION        → chaque cœur calcule par paquets (SIMD)
-3. BLOCKING             → on garde les données dans le cache
-4. PARALLÉLISME (TBB)   → tous les cœurs en même temps
-5. (GPU / multi-nœuds)  → au-delà d'une machine
-   ↳ et on MESURE à chaque étape (MAQAO)
+1. DATA LAYOUT          → accès mémoire réguliers
+2. VECTORISATION        → calcul par paquets dans chaque cœur (SIMD)
+3. BLOCKING             → maintien des données dans le cache
+4. PARALLÉLISME (TBB)   → exploitation de tous les cœurs
+5. GPU / multi-nœuds    → passage à l'échelle au-delà d'une machine
+   ↳ mesure à chaque étape (MAQAO)
 ```
 
-➡️ Pour refaire tourner tout ça chez toi : [guide d'installation](../INSTALL.md).
+Reproduction de l'environnement : [guide d'installation](../INSTALL.md).
